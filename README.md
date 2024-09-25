@@ -22,7 +22,7 @@ or
 mlflow ui
 ```
 
-Basic logging:
+### Basic logging:
 
 ```
 import mlflow
@@ -33,8 +33,9 @@ mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
 mlflow.set_experiment("test")
 
 with mlflow.start_run() as run:
-    # log some dummy variables
-    mlflow.log_param("param1", 1)
+    # log some model parameters
+    params = {"max_depth": 2, "random_state": 42}
+    mlflow.log_param(params)
     # log some metrics
     mlflow.log_metric("metric1", 2)
     # log some artifacts
@@ -45,7 +46,7 @@ with mlflow.start_run() as run:
     mlflow.keras.log_model(model, "model")
 ```
 
-Autologging:
+### Autologging:
 
 ```
 mlflow.tensorflow.autolog(checkpoint=True, checkpoint_save_best_only=False)
@@ -55,6 +56,34 @@ with mlflow.start_run() as run:
                         validation_data=validation_generator,
                         epochs=5,
                         callbacks=[callback])
+```
+
+### Adding an MLflow Model to the Model Registry
+
+There are three programmatic ways to add a model to the registry.
+
+1. First, you can use the mlflow.<model_flavor>.log_model() method. For example, in your code:
+
+```
+with mlflow.start_run() as run:
+    ...
+    model = RandomForestRegressor(**params)
+    ...
+    # Log the sklearn model and register as version 1
+    mlflow.sklearn.log_model(
+        sk_model=model,
+        artifact_path="sklearn-model",
+        signature=signature,
+        registered_model_name="sk-learn-random-forest-reg-model",
+    )
+```
+
+2. The second way is to use the mlflow.register_model() method, after all your experiment runs complete and when you have decided which model is most suitable to add to the registry. For this method, you will need the run_id as part of the runs:URI argument. Same concept as connecting an experiment to a model in the UI.
+
+```
+result = mlflow.register_model(
+"runs:/d16076a3ec534311817565e6527539c0/sklearn-model", "sk-learn-random-forest-reg"
+)
 ```
 
 ### Pyfunc
