@@ -13,21 +13,48 @@ image-segmentation-brain-tumor-detection
 Start mlflow server:
 
 ```
+mlflow server --host 127.0.0.1 --port 8080
+```
+
+or
+
+```
 mlflow ui
 ```
 
-Send metrics for logging:
+Basic logging:
 
 ```
 import mlflow
-# Set our tracking server uri for logging
 
+# Set our tracking server uri for logging
 mlflow.set_tracking_uri(uri="http://127.0.0.1:5000")
 # Create a new MLflow Experiment
-mlflow.set_experiment("Training_Brain_Tumor")
+mlflow.set_experiment("test")
 
+with mlflow.start_run() as run:
+    # log some dummy variables
+    mlflow.log_param("param1", 1)
+    # log some metrics
+    mlflow.log_metric("metric1", 2)
+    # log some artifacts
+    mlflow.log_artifact("./test.txt")
+    # log the model
+    mlflow.tensorflow.log_model(model, "model")
+    # log the model as a Keras model
+    mlflow.keras.log_model(model, "model")
+```
+
+Autologging:
+
+```
 mlflow.tensorflow.autolog(checkpoint=True, checkpoint_save_best_only=False)
 
+with mlflow.start_run() as run:
+    history = model.fit(train_generator,
+                        validation_data=validation_generator,
+                        epochs=5,
+                        callbacks=[callback])
 ```
 
 ### Pyfunc
